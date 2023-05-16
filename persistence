@@ -1,0 +1,46 @@
+#calculate persistence
+# Function to calculate persistence for a given month, year, and threshold
+def persistence(data, month, year, threshold, hours=2):
+    month_data = data[(data.index.month == month) & (data.index.year == year)]
+    if len(month_data) < hours:
+        return np.nan
+    rolling_sum = month_data['Current Speed'].rolling(window=hours).apply(lambda x: (x <= threshold).sum(), raw=True)
+    persistence_value = (rolling_sum == hours).sum() / len(month_data) * 100
+    return persistence_value
+ 
+ 
+# Replace these column names with the actual column names in your DataFrame
+speed_col = 'Current Speed'
+ 
+# Set the speed thresholds and month names
+speed_thresholds = [0.5, 0.75, 1.0]
+month_names = [calendar.month_abbr[m] for m in range(1, 13)]
+ 
+# Initialize a dictionary to store the persistence tables
+persistence_tables = {}
+ 
+# Calculate the persistence tables for each speed threshold
+for threshold in speed_thresholds:
+    years = np.unique(df.index.year)
+    yearly_persistence_data = np.array([[persistence(df, month, year, threshold) for year in years] for month in range(1, 13)]).T
+    p00 = np.nanpercentile(yearly_persistence_data, 0, axis=0, method='nearest', keepdims=True)
+    p10 = np.nanpercentile(yearly_persistence_data, 10, axis=0, method='nearest', keepdims=True)
+    p20 = np.nanpercentile(yearly_persistence_data, 20, axis=0, method='nearest', keepdims=True)
+    p30 = np.nanpercentile(yearly_persistence_data, 30, axis=0, method='nearest', keepdims=True)
+    p40 = np.nanpercentile(yearly_persistence_data, 40, axis=0, method='nearest', keepdims=True)
+    p50 = np.nanpercentile(yearly_persistence_data, 50, axis=0, method='nearest', keepdims=True)
+    p60 = np.nanpercentile(yearly_persistence_data, 60, axis=0, method='nearest', keepdims=True)
+    p70 = np.nanpercentile(yearly_persistence_data, 70, axis=0, method='nearest', keepdims=True)
+    p80 = np.nanpercentile(yearly_persistence_data, 80, axis=0, method='nearest', keepdims=True)
+    p90 = np.nanpercentile(yearly_persistence_data, 90, axis=0, method='nearest', keepdims=True)
+    p100 = np.nanpercentile(yearly_persistence_data, 100, axis=0, method='nearest', keepdims=True)
+   
+    persistence_data = np.vstack((p00, p10,p20,p30,p40,p50,p60,p70,p80,p90,p100)).T
+    persistence_table = pd.DataFrame(persistence_data, columns=['P00','P10', 'P20', 'P30', 'P40', 'P50', 'P60', 'P70', 'P80', 'P90', 'P100'], index=month_names)
+    persistence_tables[threshold] = persistence_table.round(2)
+ 
+# Display the persistence tables
+for threshold, table in persistence_tables.items():
+    print(f"Persistence table for {threshold} m: 2 Hour Operation")
+    print(table)
+    print("\n")
